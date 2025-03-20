@@ -1,0 +1,503 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>QareCode Technical Configurator</title>
+    <style>
+        :root {
+            --qc-dark-blue: #00147A;
+            --qc-blue: #0053A5;
+            --qc-light-blue: #0077CF;
+            --grey: #8A8A8D;
+            --light-grey: #F4F4F4;
+            --success-green: #4CAF50;
+            --warning-orange: #FF9800;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background-color: white;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+        }
+
+        .logo {
+            width: 120px;
+            height: 120px;
+            margin-bottom: 20px;
+            background-color: var(--qc-dark-blue);
+            padding: 10px;
+            border-radius: 10px;
+        }
+
+        .header h1 {
+            color: var(--qc-dark-blue);
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: var(--grey);
+            font-size: 16px;
+        }
+
+        .attribute-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            border-radius: 12px;
+            background-color: var(--light-grey);
+            position: relative;
+        }
+
+        .dependency-note {
+            position: absolute;
+            top: 0;
+            right: 0;
+            background-color: var(--warning-orange);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin: 10px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .dependency-note.visible {
+            opacity: 1;
+        }
+
+        .attribute-title {
+            color: var(--qc-dark-blue);
+            margin-bottom: 15px;
+            font-size: 20px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .option-button {
+            padding: 15px 20px;
+            border: 2px solid var(--qc-blue);
+            border-radius: 8px;
+            background-color: white;
+            color: var(--qc-dark-blue);
+            cursor: pointer;
+            font-size: 16px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .option-button.active {
+            background-color: var(--qc-dark-blue);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .option-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .option-button.disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            margin-top: 40px;
+        }
+
+        .feature-card {
+            background-color: white;
+            border: 2px solid var(--grey);
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            opacity: 0.6;
+            cursor: pointer;
+        }
+
+        .feature-card.enabled {
+            border-color: var(--qc-blue);
+            opacity: 1;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .feature-card.dormant {
+            opacity: 0.4;
+            border-color: var(--grey);
+            background-color: #f5f5f5;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .feature-card h3 {
+            color: var(--qc-dark-blue);
+            margin: 0 0 10px 0;
+        }
+
+        .feature-card p {
+            color: var(--grey);
+            margin: 0;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+
+        .feature-status {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-top: 10px;
+        }
+
+        .enabled .feature-status {
+            background-color: #e8f5e9;
+            color: #2e7d32;
+        }
+
+        .feature-status {
+            background-color: #ffebee;
+            color: #c62828;
+        }
+
+        .dormant .feature-status {
+            background-color: #e0e0e0;
+            color: var(--grey);
+        }
+
+        .configuration-status {
+            margin: 20px 0;
+            padding: 15px;
+            border-radius: 8px;
+            background-color: var(--light-grey);
+            color: var(--grey);
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .export-btn {
+            background-color: var(--qc-dark-blue);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .export-btn:hover {
+            background-color: var(--qc-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        @keyframes highlight {
+            0% { background-color: var(--warning-orange); }
+            100% { background-color: var(--qc-dark-blue); }
+        }
+
+        .auto-selected {
+            animation: highlight 1s;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="header">
+    <img src="images/QareCode logo.png" alt="QareCode Logo" class="logo">
+    <h1>QareCode Configurator</h1>
+    <p>Configure user needs for your digital health solution</p>
+¨	</div>
+
+        <div class="attribute-section">
+            <div class="dependency-note" id="aidc-dependency-note">Dependencies applied</div>
+            <h2 class="attribute-title">AIDC Technology</h2>
+            <div class="options-grid" data-attribute="aidc">
+                <button class="option-button" onclick="toggleOption(this)">QR Code</button>
+                <button class="option-button" onclick="toggleOption(this)">Data Matrix Code</button>
+                <button class="option-button" onclick="toggleOption(this)">NFC</button>
+            </div>
+        </div>
+
+        <div class="attribute-section">
+            <h2 class="attribute-title">Location</h2>
+            <div class="options-grid" data-attribute="location">
+                <button class="option-button" onclick="toggleOption(this)">On Label</button>
+                <button class="option-button" onclick="toggleOption(this)">On Pack</button>
+                <button class="option-button" onclick="toggleOption(this)">On Leaflet</button>
+            </div>
+        </div>
+
+        <div class="attribute-section">
+            <div class="dependency-note" id="uniqueness-dependency-note">Dependencies applied</div>
+            <h2 class="attribute-title">Uniqueness/Identification</h2>
+            <div class="options-grid" data-attribute="uniqueness">
+                <button class="option-button" onclick="toggleOption(this)">Individual Level</button>
+                <button class="option-button" onclick="toggleOption(this)">Brand Level</button>
+            </div>
+        </div>
+
+        <div class="attribute-section">
+            <h2 class="attribute-title">Link Type</h2>
+            <div class="options-grid" data-attribute="link">
+                <button class="option-button" onclick="toggleOption(this)">Landing Page</button>
+                <button class="option-button" onclick="toggleOption(this)">App</button>
+                <button class="option-button" onclick="toggleOption(this)">Static</button>
+            </div>
+        </div>
+
+        <div class="features-grid" id="features-grid">
+        </div>
+
+        <button class="export-btn" onclick="exportConfiguration()">Export Configuration</button>
+    </div>
+
+    <script>
+        const featureRules = {
+    "CounterfeitDetection": {
+        "name": "Counterfeit Detection",
+        "description": "Enable product tracking and authentication",
+        "requires": {
+            "aidc": ["Data Matrix Code", "NFC"],
+            "uniqueness": ["Individual Level"]
+        }
+    },
+    "Recalls": {
+        "name": "Recalls",
+        "description": "Be notified if product is unsafe",
+        "requires": {
+            "aidc": ["Data Matrix Code", "NFC"],
+            "uniqueness": ["Individual Level"]
+        }
+    },
+    "Expiry": {
+        "name": "Expiry information",
+        "description": "Be notified if product is expired",
+        "requires": {
+            "aidc": ["Data Matrix Code", "NFC"],
+            "uniqueness": ["Individual Level"]
+        }
+    },
+    "TimeInUse": {
+        "name": "Time in use",
+        "description": "Be notified if product has been used for too long",
+        "requires": {
+            "aidc": ["Data Matrix Code", "NFC"],
+            "uniqueness": ["Individual Level"]
+        }
+    },
+    "eIFUePI": {
+        "name": "Instructions for use",
+        "description": "Get electronic instructions for use and product information",
+        "requires": {
+            "aidc": ["QR Code", "Data Matrix Code", "NFC"],
+            "uniqueness": ["Brand Level", "Individual Level"],
+	"link": ["Landing Page", "App"]
+        }
+    },
+    "Doselog": {
+        "name": "Doselog via camera",
+        "description": "Use phone to automatically log doses by scanning with camera",
+        "requires": {
+            "aidc": ["QR Code", "Data Matrix Code"],
+            "location": ["On Label"],
+            "uniqueness": ["Brand Level", "Individual Level"],
+	"link": ["Landing Page", "App"]
+        }
+    },
+    "ProvideContent": {
+        "name": "Product specific content",
+        "description": "Guide users with product specific or otherwise relevant content",
+        "requires": {
+            "aidc": ["QR Code", "Data Matrix Code", "NFC"],
+            "uniqueness": ["Brand Level", "Individual Level"],
+            "link": ["Landing Page", "App"]
+        }
+    },
+    "Linktoapp": {
+        "name": "Link to relevant app",
+        "description": "Simple directions to right patient support solution",
+        "requires": {
+            "aidc": ["QR Code", "Data Matrix Code", "NFC"],
+            "uniqueness": ["Brand Level", "Individual Level"],
+	"link": ["Landing Page", "App"]
+        }
+    }
+};
+
+
+        function initializeFeatures() {
+            const featuresGrid = document.getElementById('features-grid');
+            Object.entries(featureRules).forEach(([id, feature]) => {
+                const card = document.createElement('div');
+                card.className = 'feature-card dormant';
+                card.id = `feature-${id}`;
+                card.innerHTML = `
+                    <h3>${feature.name}</h3>
+                    <p>${feature.description}</p>
+                    <div class="feature-status">Waiting for complete configuration</div>
+                `;
+                featuresGrid.appendChild(card);
+            });
+            updateFeatures();
+        }
+
+        function toggleOption(button) {
+            const group = button.parentElement;
+            const attribute = group.dataset.attribute;
+            const value = button.textContent;
+
+            group.querySelectorAll('.option-button').forEach(btn => btn.classList.remove('active'));
+            button.classList.add('active');
+
+            if (attribute === 'aidc' && value === 'QR Code') {
+                const uniquenessButtons = document.querySelector('[data-attribute="uniqueness"]').querySelectorAll('.option-button');
+                uniquenessButtons.forEach(btn => {
+                    if (btn.textContent === 'Brand Level') {
+                        btn.classList.add('active', 'auto-selected');
+                        showDependencyNote('uniqueness');
+                    } else {
+                        btn.classList.remove('active');
+                    }
+                });
+            } else if (attribute === 'uniqueness' && value === 'Individual Level') {
+                const aidcButtons = document.querySelector('[data-attribute="aidc"]').querySelectorAll('.option-button');
+                aidcButtons.forEach(btn => {
+                    if (btn.textContent === 'QR Code' && btn.classList.contains('active')) {
+                        btn.classList.remove('active');
+                        showDependencyNote('aidc');
+                    }
+                });
+            }
+
+            updateFeatures();
+        }
+
+        function showDependencyNote(attribute) {
+            const note = document.getElementById(`${attribute}-dependency-note`);
+            note.classList.add('visible');
+            setTimeout(() => note.classList.remove('visible'), 2000);
+        }
+
+        function updateFeatures() {
+            const currentConfig = getCurrentConfiguration();
+            const isConfigComplete = checkConfigurationComplete(currentConfig);
+            
+            updateConfigurationStatus(currentConfig);
+            
+            Object.entries(featureRules).forEach(([id, feature]) => {
+                const card = document.getElementById(`feature-${id}`);
+                
+                if (!isConfigComplete) {
+                    card.className = 'feature-card dormant';
+                    card.querySelector('.feature-status').textContent = 'Waiting for complete configuration';
+                } else {
+                    const isEnabled = checkFeatureEnabled(feature, currentConfig);
+                    card.className = `feature-card ${isEnabled ? 'enabled' : ''}`;
+                    card.querySelector('.feature-status').textContent = 
+                        isEnabled ? 'Enabled' : 'Disabled';
+                }
+            });
+        }
+
+        function checkConfigurationComplete(config) {
+            const requiredAttributes = ['aidc', 'location', 'uniqueness', 'link'];
+            return requiredAttributes.every(attr => config[attr] !== undefined);
+        }
+
+        function updateConfigurationStatus(config) {
+            const requiredAttributes = ['aidc', 'location', 'uniqueness', 'link'];
+            const missing = requiredAttributes.filter(attr => !config[attr]);
+            
+            let statusElement = document.getElementById('configuration-status');
+            if (!statusElement) {
+                statusElement = document.createElement('div');
+                statusElement.id = 'configuration-status';
+                statusElement.className = 'configuration-status';
+                document.querySelector('.features-grid').before(statusElement);
+            }
+            
+            if (missing.length > 0) {
+                const missingFormatted = missing.map(attr => 
+                    attr.charAt(0).toUpperCase() + attr.slice(1)
+                ).join(', ');
+                statusElement.textContent = `Please select: ${missingFormatted}`;
+            } else {
+                statusElement.textContent = 'Configuration complete - Features updated';
+            }
+        }
+
+        function getCurrentConfiguration() {
+            const config = {};
+            document.querySelectorAll('.options-grid').forEach(grid => {
+                const attribute = grid.dataset.attribute;
+                const selectedOption = grid.querySelector('.option-button.active');
+                if (selectedOption) {
+                    config[attribute] = selectedOption.textContent;
+                }
+            });
+            return config;
+        }
+
+        function checkFeatureEnabled(feature, config) {
+            if (!feature.requires) return true;
+            
+            return Object.entries(feature.requires).every(([attribute, validOptions]) => {
+                if (!config[attribute]) return false;
+                return validOptions.includes(config[attribute]);
+            });
+        }
+
+        function exportConfiguration() {
+            const config = getCurrentConfiguration();
+            const enabledFeatures = Object.entries(featureRules)
+                .filter(([id, feature]) => checkFeatureEnabled(feature, config))
+                .map(([id, feature]) => feature.name);
+
+            const exportData = {
+                timestamp: new Date().toISOString(),
+                configuration: config,
+                enabledFeatures: enabledFeatures
+            };
+
+            const dataStr = "data:text/json;charset=utf-8," + 
+                encodeURIComponent(JSON.stringify(exportData, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "qarecode-config.json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        window.onload = initializeFeatures;
+    </script>
+</body>
+</html>
